@@ -6,23 +6,30 @@ Awk="`which gawk`"
 Vim="/usr/local/bin/vim"
 Head="vim: set filetype=awk ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro"
 
-# ##########################################
-# usage:
-#
-#  # do this once
-#  edit this file, edit the first 4 lines.
-#  cd etc; chmod +x etc; ./etc setup
-#
-#  after that, do
-#  ../etc/idea com
-#
-#  for a list of commands, see
-#  ../etc/ide help
-#
-#  if you want a handy shortcut...
-#  alias i="../etc/ide "
-#
-# ##########################################
+usage() { cat<<-EOF
+	
+	# Do this once
+
+	Edit the ide file, edit the first 8 lines.
+
+	cd etc; chmod +x etc; ./etc setup
+
+	# To call this code
+
+	To run something:
+
+	../etc/idea com
+	
+	For a list of commands, see
+
+	../etc/ide help
+	
+	# If you want a handy shortcut...
+
+	alias i="../etc/ide "
+	
+	EOF
+}
 
 # config. 
 
@@ -38,15 +45,16 @@ fi
 
 mkdir -p $Docs $Tmp $Etc
 
-setup0() {
+setup1() {
   if [ ! -f "$2" ]; then $1 > $2; git add $2; fi
 }
 setup() { ## # setup files
- setup1 _readme    ../etc/README.md
+ setup1 _readme    $Etc/README.md
  setup1 _requires  ../requirements.txt
  setup1 _gitignore ../.gitignore
  setup1 _license   ../LICENSE.md
- setup1 _citation   ../CITATION.md
+ setup1 _citation  ../CITATION.md
+ setup1 _vimrc     $Tmp/vimrc
 }
 hi() { ## # pull from repo
   git pull
@@ -136,25 +144,21 @@ _license() { cat<<-EOF
 	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 EOF
 }
-_citation() { cat<<-EOF
+_citation() { 
+	cat<<-EOF
 	# CITATION
 
 	Please cite this work as
 
-	T. Menzies, 2013.   
-	"Care and Feeding of your Source Code: 
-	The Lanugagez.gawk repo."  
-	2019
+	$Who, $When
+	$What
 
-	```
-	@misc{languagez:gawk19,
-          title  = "Care and Feeding of your Source Code: 
-	            The Languagez.gawk repo",
-	  author = "Tim Menzies",
-	  year   = "2019,
-	}
-	```
-
+	    @misc{languagez:gawk19,
+	    	title  = "$What",
+	    	author = "$Who",
+	    	year   = "$When,
+	    }
+	
 EOF
 }
 # end config
@@ -175,7 +179,7 @@ _banner() {
   blue=$(tput setaf 6)
   ltyl=$(tput setaf 11)
   white=$(tput setaf 15)
-  echo -n "$ltyl"
+  tput setaf 11
   cat<<-'EOF'
 
 	       .-"; ! ;"-.
@@ -197,7 +201,7 @@ _banner() {
 	$Who, $When
 
 	EOF
-  echo -n "$blue"
+  tput setaf 6
 }
 _passfail() { 
   gawk '
@@ -209,7 +213,7 @@ _passfail() {
       print "\n# :PASSED " p " :FAILED " f \
 	    " :PERCENT " int(101*p/(p+f+0.0001))}'
 }
-ok() { ## [STEM] # Run one file. If no arg, then run all.
+ok() { ## STEM # Run one file. If no arg, then run all.
   if [ -z "$1" ]; then
     for f in *ok.$x; do
 	    run $(basename "$f" ".$x")
@@ -283,8 +287,7 @@ _goldlib() { cat<<-EOF
 	}
 	EOF
 }
-ed() { ## FILE # Edit a .au file
-   cat<<-EOF> $Tmp/vimrc 
+_vimrc() { cat<<-EOF 
 	set backupdir-=.
 	set backupdir^=~/tmp,/tmp
 	set nocompatible 
@@ -312,6 +315,8 @@ ed() { ## FILE # Edit a .au file
 	set showmatch
 	colorscheme zellner
 	EOF
+}
+ed() {
   $Vim -u "$Tmp/vimrc" $*
 }
 run() { ## STEM # Run STEM.au file
@@ -327,13 +332,7 @@ run() { ## STEM # Run STEM.au file
     $Awk '/[A-Z][A-Z]/ {next} {print "W> rogue local: ",$0}' $Tmp/${file}.vars
   fi
 }
-zap() { ## # Kill all temps, reset system (dangerous)
-  if [  -d "$Var" ]; then
-    rm -rf "$Var"
-  fi
-  rm $Ide/${x}0.$x
-}
-prep() { ##  # Ensure all .au files have .awk version
+prep() { ##  # Ensure all .auk files have .awk version
   for i in *.$x; do
     stem=$(basename "$i" ".$x")
     j="$Lib/${stem}.awk"
