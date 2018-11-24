@@ -1,5 +1,7 @@
 # Languagez.gawk
 
+[![DOI](https://zenodo.org/badge/158887786.svg)](https://zenodo.org/badge/latestdoi/158887786)
+
 Mapping some generic languagez tools into gawk.
 
 ## Setup

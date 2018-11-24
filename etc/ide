@@ -8,14 +8,12 @@ Head="vim: set filetype=awk ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro
 
 usage() { cat<<-EOF
 	
-	# Do this once
-
+	# Do this once:
 	Edit the ide file, edit the first 8 lines.
 
 	cd etc; chmod +x etc; ./etc setup
 
 	# To call this code
-
 	To run something:
 
 	../etc/idea com
@@ -25,7 +23,6 @@ usage() { cat<<-EOF
 	../etc/ide help
 	
 	# If you want a handy shortcut...
-
 	alias i="../etc/ide "
 	
 	EOF
@@ -49,7 +46,7 @@ setup1() {
   if [ ! -f "$2" ]; then $1 > $2; git add $2; fi
 }
 setup() { ## # setup files
- setup1 _readme    $Etc/README.md
+ setup1 _readme    ../README.md
  setup1 _requires  ../requirements.txt
  setup1 _gitignore ../.gitignore
  setup1 _license   ../LICENSE.md
@@ -74,6 +71,8 @@ EOF
 }
 _readme() { cat<<-EOF
 	# Languagez.gawk
+
+	[![DOI](https://zenodo.org/badge/158887786.svg)](https://zenodo.org/badge/latestdoi/158887786)
 
 	Mapping some generic languagez tools into gawk.
 
