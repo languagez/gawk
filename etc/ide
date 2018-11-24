@@ -1,42 +1,78 @@
 #!/usr/bin/env bash
+Who="Tim Menzies"
+When=2018
+What="Gawk development tools"
+Awk="`which gawk`"
+Vim="/usr/local/bin/vim"
+Head="vim: set filetype=awk ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro"
 
+# ##########################################
 # usage:
 #
 #  # do this once
-#  alias my="sh my "
+#  edit this file, edit the first 4 lines.
+#  cd etc; chmod +x etc; ./etc setup
 #
 #  after that, do
-#  my com
+#  ../etc/idea com
 #
 #  for a list of commands, see
-#  my help
-
-#############################
+#  ../etc/ide help
+#
+#  if you want a handy shortcut...
+#  alias i="../etc/ide "
+#
+# ##########################################
 
 # config. 
-Awk="`which gawk`"
-Vim="/usr/local/bin/vim"
 
-My=".."
-Docs="$My/docs"
-Tmp="$My/tmp"
+Ide=".."
+Etc="$Ide/etc"
+Docs="$Ide/docs"
+Tmp="$Ide/tmp"
 
-mkdir -p $Docs $Tmp
+if [ ! -d "$Etc" ]; then 
+  echo "Run this script command in a sub-directory below repository main directory"
+  exit 1
+fi
 
-hi() { ## pull from repo
-	git pull
+mkdir -p $Docs $Tmp $Etc
+
+setup0() {
+  if [ ! -f "$2" ]; then $1 > $2; git add $2; fi
 }
-bye() { ## push to repo
-	git commit -am 'new stuff'
-	git push
-	git status
+setup() { ## # setup files
+ setup1 _readme    ../etc/README.md
+ setup1 _requires  ../requirements.txt
+ setup1 _gitignore ../.gitignore
+ setup1 _license   ../LICENSE.md
+ setup1 _citation   ../CITATION.md
 }
-Header="vim: set filetype=awk ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro"
-blank() {  ## Show an empty file
+hi() { ## # pull from repo
+  git pull
+}
+bye() { ## # push to repo
+  git commit -am 'new stuff'
+  git push
+  git status
+}
+blank() {  ## # Show an empty file
   cat<<-EOF
-	$Header
+	$Head
 
 	@include "gold"
+
+EOF
+}
+_readme() { cat<<-EOF
+	# Languagez.gawk
+
+	Mapping some generic languagez tools into gawk.
+
+	## Setup
+
+	- **Zenodo:** need to  remove appplication restrictions at the organization level
+	  https://github.com/organizations/languagez/settings/oauth_application_policy
 
 EOF
 }
@@ -106,24 +142,26 @@ _citation() { cat<<-EOF
 	Please cite this work as
 
 	T. Menzies, 2013.   
-	"Care and Feeding of your Source Code: The Lanugagez.gawk repo."  
+	"Care and Feeding of your Source Code: 
+	The Lanugagez.gawk repo."  
 	2019
 
 	```
 	@misc{languagez:gawk19,
-          title  = "Care and Feeding of your Source Code: The Languagez.gawk repo",
+          title  = "Care and Feeding of your Source Code: 
+	            The Languagez.gawk repo",
 	  author = "Tim Menzies",
 	  year   = "2019,
+	}
+	```
 
 EOF
 }
 # end config
 #---------------------------------
 help() { ## # Show options.
-  banner
-  printf "Gawk object layer v0.3\n"
-  printf "(c) 2018, tim@menzies.us, BSD (2-clause)"
-  printf "\n\noptions:\n"
+  _banner
+  printf "options:\n"
   grep '{ ##' $0  | sort | $Awk '
   BEGIN  {FS="#"}
   /grep/ { next}
@@ -131,29 +169,34 @@ help() { ## # Show options.
 	   printf("  %-10s%-8s%s\n",$1,$3,$4)}'
   echo
 }
-x=au
 
-banner() { 
+_banner() { 
   red=$(tput setaf 1)
   blue=$(tput setaf 6)
   ltyl=$(tput setaf 11)
   white=$(tput setaf 15)
   echo -n "$ltyl"
   cat<<-'EOF'
-       .-"; ! ;"-.
-      .'!  : | :  !`.
-     /\  ! : ! : !  /\
-    /\ |  ! :|: !  | /\
-   (  \ \ ; :!: ; / /  )
-  ( `. \ | !:|:! | / .' )
-  (`. \ \ \!:|:!/ / / .')
-   \ `.`.\ |!|! |/,'.' /
-    `._`.\\\!!!// .'_.'
-       `.`.\\|//.'.'
-        |`._`n'_.'|  hjw
-        "----^----"	
-	   
-EOF
+
+	       .-"; ! ;"-.
+	      .'!  : | :  !`.
+	     /\  ! : ! : !  /\
+	    /\ |  ! :|: !  | /\
+	   (  \ \ ; :!: ; / /  )
+	  ( `. \ | !:|:! | / .' )
+	  (`. \ \ \!:|:!/ / / .')
+	   \ `.`.\ |!|! |/,'.' /
+	    `._`.\\\!!!// .'_.'
+	       `.`.\\|//.'.'
+	        |`._`n'_.'|  hjw
+	        "----^----"	
+	EOF
+   cat<<-EOF
+
+	$What
+	$Who, $When
+
+	EOF
   echo -n "$blue"
 }
 _passfail() { 
@@ -179,32 +222,6 @@ ok() { ## [STEM] # Run one file. If no arg, then run all.
     run ${1}ok | _passfail
   fi  
 }
-twins() { ## STEM # Generate STEM.au and STEMok.au.
-  stem=$1
-  if [ ! -f "${stem}.$x" ]; then cat <<-EOF > "${stem}.$x"
-	$FileHeader
-	@include "${x}0"
-	
-	# ${stem}.$x 
-
-	EOF
-	echo "# Made ${stem}.$x"
-  fi
-  if [ ! -f "${stem}ok.$x" ]; then cat <<-EOF > "${stem}ok.$x"
-	$FileHeader
-	@include "${stem}"
-
-	function _test1(f) {
-	   is(f,1,1)
-	}
-	BEGIN {
-  	   srand(1)
-	   tests("$stem", "_test1")
-	}
-	EOF
-	echo "# Made ${stem}ok.$x"
-  fi
-}
 _2awk() {
   $Awk '
 BEGIN {In=1}
@@ -219,23 +236,6 @@ In {
     print pre $0
    }
 ' -
-}
-gitignore() { ## # Add a gitignore statement
-  if [ ! -f .gitignore ]; then cat <<-EOF > .gitignore
-	.DS_Store
-	# vim stuff
-	[._]*.s[a-w][a-z]
-	[._]s[a-w][a-z]
-	*.un~
-	Session.vim
-	.netrwhist
-	*~
-	# my stuff
-	awkprof.out
-	awkvars.out
-	var
-	EOF
-  fi
 }
 _goldlib() { cat<<-EOF
 	# /* vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: */
@@ -282,7 +282,6 @@ _goldlib() { cat<<-EOF
 	  print( pre "\t" f "\t" want "\t" got )
 	}
 	EOF
-  fi
 }
 ed() { ## FILE # Edit a .au file
    cat<<-EOF> $Tmp/vimrc 
@@ -332,7 +331,7 @@ zap() { ## # Kill all temps, reset system (dangerous)
   if [  -d "$Var" ]; then
     rm -rf "$Var"
   fi
-  rm $My/${x}0.$x
+  rm $Ide/${x}0.$x
 }
 prep() { ##  # Ensure all .au files have .awk version
   for i in *.$x; do
@@ -359,7 +358,6 @@ pull() { ## # Pull from Github
 ###################################
 # get all the configs (if any)
 
-_0
 
 if [ -f "${1}.$x" ]; then
         run "$@"
