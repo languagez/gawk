@@ -60,6 +60,7 @@ setup() { ## # setup files
  setup1 _license   ../LICENSE.md
  setup1 _citation  ../CITATION.md
  setup1 _vimrc     $Tmp/vimrc
+ setup1 _lib       $Src/gold.awk
 }
 hi() { ## # pull from repo
   git pull
@@ -218,7 +219,9 @@ _passfail() {
     $2=="FAILED" { f++ }
     END          { 
       print "\n# :PASSED " p " :FAILED " f \
-	    " :PERCENT " int(101*p/(p+f+0.0001))}'
+	    " :PERCENT " int(101*p/(p+f+0.0001))
+      exit FAILED > 0
+    }'
 }
 ok() { ## STEM # Run one file. If no arg, then run all.
   if [ -z "$1" ]; then
@@ -248,14 +251,13 @@ In {
    }
 ' -
 }
-_goldlib() { cat<<-EOF
+_lib() { cat<<-EOF
 	$Head
 	
 	# ----------------------------------------
 	# structs
 	
-	function new(i)      { split("",i,"") }
-	function Object(i)   { new(i); i["oid"] = ++OID }
+	function List(i)     { split("",i,"") }
 	
 	function has(lst,key,fun) {
 	  lst[key][SUBSEP]
@@ -263,7 +265,7 @@ _goldlib() { cat<<-EOF
 	  if (fun) @fun(lst[key])
 	}
 	function have( lst,key,fun,a) { 
-	  has(lst,key); @fun(lst[key],a) }
+	  	has(lst,key); @fun(lst[key],a) }
 	function haves(lst,key,fun,a,b) { 
 		has(lst,key); @fun(lst[key],a,b) }
 	function have2(lst,key,fun,a,b,c) { 
