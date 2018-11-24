@@ -4,7 +4,7 @@ When=2018
 What="Gawk development tools"
 Awk="`which gawk`"
 Vim="/usr/local/bin/vim"
-Head="vim: set filetype=awk ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro"
+Head="# vim: set filetype=awk ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro"
 
 usage() { cat<<-EOF
 	
@@ -249,7 +249,7 @@ In {
 ' -
 }
 _goldlib() { cat<<-EOF
-	# /* vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: */
+	$Head
 	
 	# ----------------------------------------
 	# structs
